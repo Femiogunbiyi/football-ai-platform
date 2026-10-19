@@ -31,6 +31,7 @@ A cloud-native, hyper-scalable predictive telemetry platform built for the Micro
 *   **Continuous Deployment:** Built using standard **GitHub Actions** workflows compiling container footprints to Azure Container Registry and shipping dynamically to Azure Container Apps.
 
 ## 🛠️ Technology Stack
+*   **Frontend Dashboard:** React, Tailwind CSS, Lucide Icons, WebSockets
 *   **Cloud Infrastructure:** Azure Event Hubs, Azure Container Apps, Azure Cache for Redis
 *   **Analytics & Data Warehouse:** Microsoft Fabric, Synapse SQL, Power BI
 *   **Artificial Intelligence:** Azure OpenAI Service (GPT-4o), Scikit-Learn, XGBoost
