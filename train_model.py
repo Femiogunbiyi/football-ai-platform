@@ -1,32 +1,42 @@
+from typing import Any, cast
+
 import pandas as pd
-from statsbombpy import sb
+from statsbombpy import sb  # type: ignore[import-not-found]
 from sklearn.model_selection import train_test_split
 from xgboost import XGBClassifier
-import joblib
+import joblib  # type: ignore[import-not-found]
+
+# pyright: reportMissingTypeStubs=false
+# pyright: reportUnknownMemberType=false
+# pyright: reportUnknownVariableType=false
+# pyright: reportUnknownArgumentType=false
+# pyright: reportAttributeAccessIssue=false
+# pyright: reportUnknownParameterType=false
+# pyright: reportMissingParameterType=false
 
 print("Fetching competitions...")
-competitions = sb.competitions()
+competitions = cast(pd.DataFrame, sb.competitions())
 
-# Using World Cup 2022 Data (Comp ID: 43, Season ID: 106)
-comp_id = 43
-season_id = 106
+# Using Premier League 2015/2016
+comp_id = 2
+season_id = 27
 
 print("Fetching matches...")
-matches = sb.matches(competition_id=comp_id, season_id=season_id)
+matches = cast(pd.DataFrame, sb.matches(competition_id=comp_id, season_id=season_id))
 
 print("Processing matches with xG and Card tracking...")
-all_snapshots = []
+all_snapshots: list[dict[str, Any]] = []
 
 # Process the top 30 matches for a broader data baseline
 for match_id in matches['match_id'].head(30):
     try:
-        events = sb.events(match_id=match_id)
+        events = cast(pd.DataFrame, sb.events(match_id=match_id))
         events = events.sort_values(by=['minute', 'second']).dropna(subset=['minute'])
-        
+
         match_info = matches[matches['match_id'] == match_id].iloc[0]
         home_team = match_info['home_team']
         away_team = match_info['away_team']
-        
+
         # Determine the ultimate training label
         if match_info['home_score'] > match_info['away_score']:
             final_outcome = 0  # Home Win
@@ -34,30 +44,30 @@ for match_id in matches['match_id'].head(30):
             final_outcome = 2  # Away Win
         else:
             final_outcome = 1  # Draw
-            
+
         # Sample snapshots at 5-minute intervals
         for minute in range(5, 90, 5):
             past_events = events[events['minute'] <= minute]
-            
+
             # 1. Track Running Goals
             shots = past_events[past_events['type'] == 'Shot']
             home_goals = len(shots[(shots['team'] == home_team) & (shots['shot_outcome'] == 'Goal')])
             away_goals = len(shots[(shots['team'] == away_team) & (shots['shot_outcome'] == 'Goal')])
             goal_differential = home_goals - away_goals
-            
+
             # 2. Track Expected Goals (xG) Accumulation
             home_xg = shots[shots['team'] == home_team]['shot_statsbomb_xg'].fillna(0).sum()
             away_xg = shots[shots['team'] == away_team]['shot_statsbomb_xg'].fillna(0).sum()
             xg_differential = home_xg - away_xg
-            
+
             # 3. Track Red Cards
             cards_events = past_events[past_events['foul_committed_card'].notna()]
-            home_reds = len(cards_events[(cards_events['team'] == home_team) & 
+            home_reds = len(cards_events[(cards_events['team'] == home_team) &
                                          (cards_events['foul_committed_card'].isin(['Red Card', 'Second Yellow']))])
-            away_reds = len(cards_events[(cards_events['team'] == away_team) & 
+            away_reds = len(cards_events[(cards_events['team'] == away_team) &
                                          (cards_events['foul_committed_card'].isin(['Red Card', 'Second Yellow']))])
             red_cards_diff = home_reds - away_reds
-            
+
             all_snapshots.append({
                 'current_minute': minute,
                 'goal_differential': goal_differential,
@@ -65,8 +75,8 @@ for match_id in matches['match_id'].head(30):
                 'red_cards_diff': red_cards_diff,
                 'final_outcome': final_outcome
             })
-            
-    except Exception as e:
+
+    except Exception:
         continue
 
 # Build the Matrix (X) and Vector (y)
@@ -88,16 +98,16 @@ joblib.dump(model, 'football_momentum_model.pkl')
 print("Model saved successfully as 'football_momentum_model.pkl'!")
 
 # Smart Predictor Function to verify it works
-def predict_live_probability_v2(minute, goal_diff, xg_diff, red_diff):
+def predict_live_probability_v2(minute: int, goal_diff: int, xg_diff: float, red_diff: int) -> None:
     sample = pd.DataFrame([{
-        'current_minute': minute, 
-        'goal_differential': goal_diff, 
+        'current_minute': minute,
+        'goal_differential': goal_diff,
         'xg_differential': xg_diff,
         'red_cards_diff': red_diff
     }])
-    
+
     probabilities = model.predict_proba(sample)[0]
-    
+
     print(f"\n--- Smart Prediction at Minute {minute} ---")
     print(f"Goals Diff: {goal_diff} | xG Diff: {xg_diff:+.2f} | Red Cards Diff: {red_diff}")
     print(f"⚽ Home Win: {probabilities[0]:.2%}")
