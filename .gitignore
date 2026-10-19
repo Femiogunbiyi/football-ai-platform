@@ -1,0 +1,26 @@
+# 1. Python Virtual Environment
+venv/
+ENV/
+env/
+
+# 2. Local App Configurations & Private Keys
+.env
+.env.local
+*.env
+
+# 3. Python Cache & Compiled Files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# 4. Machine Learning Models
+*.pkl
+*.joblib
+*.pb
+*.h5
+
+# 5. Operating System Junk
+.DS_Store
+Thumbs.db
