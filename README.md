@@ -39,15 +39,23 @@ A cloud-native, hyper-scalable predictive telemetry platform built for the Micro
 
 ## 📦 Project Directory Structure
 ```text
+football-ai-platform/            # Root Project Directory
 ├── .github/
 │   └── workflows/
-│       └── azure-deploy.yml     # GitHub Actions CI/CD pipeline
+│       └── azure-deploy.yml     # GitHub Actions CI/CD deployment pipeline
+├── football-dashboard/          # React Client UI Dashboard Application
+│   ├── src/
+│   │   ├── App.js               # Real-time WebSocket scoring interface
+│   │   └── index.js             # React application mount entry point
+│   ├── package.json             # Frontend dependency package blueprint
+│   └── .gitignore               # Frontend local file isolation configuration
 ├── Dockerfile                   # Portability blueprint for Azure Container Apps
-├── README.md                    # Core documentation and system overview
-├── fabric_schema.sql            # Star schema definitions for Fabric Lakehouse
-├── requirements.txt             # Manifest of project dependencies
-├── test_hub_stream.py           # Production-ready streaming match simulation
-└── train_model.py               # ML processing script producing our model file
+├── README.md                    # Comprehensive documentation and architecture hub
+├── fabric_schema.sql            # Star schema architecture for Fabric Lakehouse
+├── requirements.txt             # Primary Python backend tracking dependencies
+├── test_hub_stream.py           # Production-grade Event Hub streaming simulation
+├── train_model.py               # ML workflow engine creating model file
+└── football_momentum_model.pkl  # Trained, frozen local XGBoost model brain
 ```
 
 ## ⚙️ Local Development Setup
