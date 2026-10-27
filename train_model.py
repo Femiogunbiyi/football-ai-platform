@@ -17,6 +17,7 @@ import joblib  # type: ignore[import-not-found]
 print("Fetching competitions...")
 competitions = cast(pd.DataFrame, sb.competitions())
 
+
 # Using Premier League 2015/2016
 comp_id = 2
 season_id = 27
